@@ -99,7 +99,7 @@ require_once 'connect.php';
                     $idDonk = $f['id'];
                     // Pobieranie zdjęcia profilowego Osła (PImg - Profile Image)
                     $taskPImg = "SELECT src, `profile` FROM img WHERE id_donk = $idDonk AND `profile`=1";
-                    $queryPImg = $conn -> query($taskImg);
+                    $queryPImg = $conn -> query($taskPImg);
                     $fPImg =  mysqli_fetch_assoc($queryPImg);
                 
                 ?>
