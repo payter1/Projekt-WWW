@@ -18,8 +18,10 @@ function saveFile ($fileInputName, $allowedExtentions, $maxFileSizeMb, $saveFold
     foreach($exExt as $ext){
        $extArray[] = "$ext";
     }
-
     $errors= array();
+    if(is_uploaded_file($_FILES['$fileInputName']['tmp_name'])){
+        $errors[]="Nie przesłano żadnego pliku";
+    }
     $file_name = $_FILES[$fileInputName]['name'];
     $file_size =$_FILES[$fileInputName]['size'];
     $file_tmp =$_FILES[$fileInputName]['tmp_name']; 

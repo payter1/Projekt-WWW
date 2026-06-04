@@ -7,34 +7,35 @@ if(isset($_GET['add'])){
     $color = $_POST['color'];
     $sex = $_POST['sex'];
     
-    if(is_uploaded_file($_FILES['propic']['tmp_name'])){
-        $imgName = plCharset($name).'_ikona';
-        if(file_check_type('propic') && file_check_err('propic')){
-            $srcProPic = "'".file_save('propic', 'img', $imgName)."'";
-        }
-    }else $srcProPic = 'NULL';
-    // else if($_POST['oldImg'] == NULL){
-    //     $srcProPic = 'NULL';
-    // }else $srcProPic = "'".$_POST['oldImg']."'";
+    // if(is_uploaded_file($_FILES['propic']['tmp_name'])){
+    //     $imgName = plCharset($name).'_ikona';
+    //     if(file_check_type('propic') && file_check_err('propic')){
+    //         $srcProPic = "'".file_save('propic', 'img', $imgName)."'";
+    //     }
+    // }else $srcProPic = 'NULL';
+    // // else if($_POST['oldImg'] == NULL){
+    // //     $srcProPic = 'NULL';
+    // // }else $srcProPic = "'".$_POST['oldImg']."'";
 
-    if(is_uploaded_file($_FILES['photos']['tmp_name'])){
-        $imgName = plCharset($name).'_1';
-        if(file_check_type('photos') && file_check_err('photos')){
-            $srcPhotos = "'".file_save('photos', 'img', $imgName)."'";
-        }
-    }else $srcPhotos = 'NULL';
+    // if(is_uploaded_file($_FILES['photos']['tmp_name'])){
+    //     $imgName = plCharset($name).'_1';
+    //     if(file_check_type('photos') && file_check_err('photos')){
+    //         $srcPhotos = "'".file_save('photos', 'img', $imgName)."'";
+    //     }
+    // }else $srcPhotos = 'NULL';
 
-    $saveFile = saveFile("photos","jpg,png,jpeg,webp", 20, "images");
-    if($saveFile[0]==1){
-        $exHrefs = explode(';',$saveFile[1]);
-        foreach($exHrefs as $href){
-            $taskAddImg = "INSERT INTO item_images VALUES(NULL, $itemId, '$href', 2)";
+    $result = 'error=';
+    $taskAdd = "INSERT INTO donkeys VALUES(NULL, '$name', '$dataUr', '$sex', '$color', 1)";
+    if($conn->query($taskAdd)){
+        $donkID = $conn->insert_id;
+        $saveFile = saveFile("propic","jpg,png,jpeg,webp", 20, "img");
+        if($saveFile[0]==1){
+            $taskAddImg = "INSERT INTO img VALUES(NULL, '$saveFile[1]', $donkID, 1)";
             $queryAddImg = mysqli_query($connect,$taskAddImg);
-        }
+            $result = 'added';
+        }else $result .= "$saveFile[1]";
     }
-    $taskAdd = "INSERT INTO osly VALUES(NULL, '$name', '$dataUr', '$sex', '$color', 1)";
-    $queryAdd = $conn->query($taskAdd);
-    header("Location:admrejestr.php?added=$taskAdd");
+    header("Location:admrejestr.php?$result");
 }
 ?>
 
