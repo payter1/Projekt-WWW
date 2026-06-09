@@ -1,4 +1,7 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 $host = "localhost";
 $db_user = "root";
 $db_password = "";
@@ -9,4 +12,5 @@ if ($conn->connect_error) {
     die("Błąd połączenia: " . $mysqli->connect_error);
 }
 $conn->set_charset("UTF8");
+
 ?>

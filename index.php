@@ -19,8 +19,7 @@ require_once 'connect.php';
                 </div>
             </aside>
             <section class="col-lg-9">
-                <!-- Pasek narzędziowy -->
-                <div class="d-flex justify-content-between align-items-center mb-4 bg-primary-subtle border p-3 rounded-3 shadow-sm">
+                <div class="mb-4 bg-primary-subtle border p-3 rounded-3 shadow-sm text-center fw-bold">
                     Dom Osiołka
                 </div>
                 <!-- Siatka dla osłów -->

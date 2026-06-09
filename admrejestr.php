@@ -1,5 +1,8 @@
 <?php
 require_once 'connect.php';
+if($_SESSION['userLVL'] =! 2){
+    header("Location: index.php");
+}
 ?>
 <!DOCTYPE html>
 <html lang="pl" data-bs-theme="auto">

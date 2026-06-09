@@ -1,69 +1,86 @@
 <?php
 require_once 'connect.php';
+if(isset($_SESSION['logged']) && $_SESSION['logged'] === true && $_SESSION['userLVL'] != 2){
+    header("Location: index.php");
+    exit;
+}
 if(isset($_POST['login'])){
 
     $login = htmlspecialchars(trim($_POST['login']), ENT_QUOTES, 'UTF-8');
     $password = $_POST['password'];
+    $passwordR = $_POST['passwordR'];
     $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-    $fname = htmlspecialchars($_POST['fname'], ENT_QUOTES, 'UTF-8');
-    $lname = htmlspecialchars($_POST['lname'], ENT_QUOTES, 'UTF-8');
-    $email = htmlspecialchars($_POST['email'], ENT_QUOTES, 'UTF-8');
-    $tel   = htmlspecialchars($_POST['tel'], ENT_QUOTES, 'UTF-8');
-    $city  = htmlspecialchars($_POST['city'], ENT_QUOTES, 'UTF-8');
-    $hnum  = htmlspecialchars($_POST['hnum'], ENT_QUOTES, 'UTF-8');
-    $anum  = htmlspecialchars($_POST['anum'], ENT_QUOTES, 'UTF-8');
-    $zip   = htmlspecialchars($_POST['zip'], ENT_QUOTES, 'UTF-8');
+    $fname   = htmlspecialchars($_POST['fname'], ENT_QUOTES, 'UTF-8');
+    $lname   = htmlspecialchars($_POST['lname'], ENT_QUOTES, 'UTF-8');
+    $email   = htmlspecialchars($_POST['email'], ENT_QUOTES, 'UTF-8');
+    $tel     = htmlspecialchars($_POST['tel'], ENT_QUOTES, 'UTF-8');
+    $city    = htmlspecialchars($_POST['city'], ENT_QUOTES, 'UTF-8');
+    $street  = htmlspecialchars($_POST['street'], ENT_QUOTES, 'UTF-8');
+    $hnum    = htmlspecialchars($_POST['hnum'], ENT_QUOTES, 'UTF-8');
+    $anum    = htmlspecialchars($_POST['anum'], ENT_QUOTES, 'UTF-8');
+    $zip     = htmlspecialchars($_POST['zip'], ENT_QUOTES, 'UTF-8');
+    if($_SESSION['userLVL'] == 2){
+        $lvl   = $_POST['lvl'];
+    }else $lvl = NULL;
+    
+
 
     $isValid = true;
     $result = 0; 
     // WALIDACJA DANYCH
     if (!preg_match('/^[a-zA-Z0-9_]{3,20}$/', $login)) {
         $isValid = false;
-        $result = 3; // Błąd: Login niepoprawny (złe znaki lub długość inna niż 3-20)
+        $result = "Login niepoprawny (złe znaki lub długość inna niż 3-20)";
         
-    } elseif (strlen($password) < 8) {
+    } elseif (strlen($password) < 3) {
         $isValid = false;
-        $result = 4; // Błąd: Hasło ma mniej niż 8 znaków
+        $result = "Hasło ma mniej niż 3 znaków";
         
+    } elseif ($password !== $passwordR) {
+        $isValid = false;
+        $result = "Podane hasła nie są identyczne";
+
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $isValid = false;
-        $result = 5; // Błąd: Nieprawidłowy format e-mail
+        $result = "Nieprawidłowy format e-mail";
         
     } elseif (strlen($fname) < 2 || strlen($lname) < 2 || strlen($city) < 2 || empty($hnum)) {
         $isValid = false;
-        $result = 6; // Błąd: Zbyt krótkie imię, nazwisko, miasto lub brak numeru domu
+        $result = "Zbyt krótkie imię, nazwisko, miasto lub brak numeru domu";
         
     } elseif (!empty($tel) && !preg_match('/^[0-9]{9,15}$/', $tel)) {
         $isValid = false;
-        $result = 7; // Błąd: Telefon podany, ale ma zły format (nie ma 9-15 cyfr)
+        $result = "Telefon podany, ale ma zły format (nie ma 9-15 cyfr)";
         
     } elseif (!preg_match('/^[0-9]{2}-[0-9]{3}$/', $zip)) {
         $isValid = false;
-        $result = 8; // Błąd: Zły format kodu pocztowego
+        $result = "Zły format kodu pocztowego";
     }
     // ZAPIS DO BAZY 
     if ($isValid) {
-        $task ="INSERT INTO users (`login`, `password`, fname, lname, email, tel, city, hnum, anum, zip)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $task ="INSERT INTO users (`login`, `password`, fname, lname, email, tel, city, street, hnum, anum, zip, lvl)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        echo "2=$result\n";
         $query = $conn -> prepare($task);
         $result = 0;
         if($query){
-            $query -> bind_param("ssssssssss", 
-            $login, $passwordHash, $fname, $lname, $email, $tel, $city, $hnum, $anum, $zip
+            $query -> bind_param("sssssssssssi", 
+            $login, $passwordHash, $fname, $lname, $email, $tel, $city, $street, $hnum, $anum, $zip, $lvl
             );
 
             if($query -> execute()){
                 $result = 1;
             }elseif($query->errno == 1062){
-                $result = 2; // 2 - Login lub e-mail jest już zajęty
+                $result = "Login lub e-mail jest już zajęty";
             } else {
-                $result = 0; // 0 - Inny, nieznany błąd
+                $result = "Inny, nieznany błąd";
             }
             $query->close();
+            header("Location: login.php?result=$result");
+            exit;echo "5\n";
         }
-        header("Location: register.php?result=$result");
-        exit;
-    }
+    }else header("Location: register.php?result=$result");
+    exit;
 }
 ?>
 <!DOCTYPE html>
@@ -82,18 +99,21 @@ if(isset($_POST['login'])){
                 </div>
             </aside>
             <section class="col-lg-9">
-                <!-- Pasek narzędziowy -->
-                <div class="d-flex justify-content-between align-items-center mb-4 bg-primary-subtle border p-3 rounded-3 shadow-sm">
+                <div class="mb-4 bg-primary-subtle border p-3 rounded-3 shadow-sm text-center fw-bold">
                     REJESTRACJA
                 </div>
                  <div class="col">
                     <article class="card h-100 shadow-sm border-0 position-relative">
+
                         <!-- alerty -->
+                        <?php if(isset($_GET['result']) && $_GET['result'] != 1){?>
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <strong>Błąd</strong> Treść błędu
+                            <strong>Błąd: </strong> <?=$_GET['result']?>
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
+                        <?php }?>
                         <!-- // -->
+
                         <div class="card-body d-flex flex-column p-3">
                         <!-- POCZĄTEK FORMULARZA REJESTRACJI -->
                         <form class="row g-3 needs-validation" action="register.php" method="POST" novalidate>
@@ -107,25 +127,43 @@ if(isset($_POST['login'])){
                             </div>
                         </div>
                         <div class="col-md-8">
+                            <?php if($_SESSION['userLVL'] == 2){ ?>
+                                <input type="radio" class="btn-check" name="lvl" id="staff" autocomplete="off" checked>
+                                <label class="btn btn-outline-primary" for="staff">Obsługa</label>
+
+                                <input type="radio" class="btn-check" name="lvl" id="adm" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="adm">Administrator</label>
+                            <?php } ?>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="password" class="form-label">Hasło</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="passwordR" class="form-label">Powtórz hasło</label>
+                            <input type="password" class="form-control" id="passwordR" name="passwordR" required>
+                            <div class="invalid-feedback">
+                                Hasła nie są identyczne!
+                            </div>
                         </div>
                         <div class="col-md-5">
                             <label for="fname" class="form-label">Imię</label>
                             <input type="text" class="form-control" id="fname" name="fname" required>
                         </div>
                         <div class="col-md-5">
-                            <label for="sname" class="form-label">Nazwisko</label>
-                            <input type="text" class="form-control" id="sname" name="sname" required>
+                            <label for="lname" class="form-label">Nazwisko</label>
+                            <input type="text" class="form-control" id="lname" name="lname" required>
                         </div>
                         <div class="col-md-5">
                             <label for="email" class="form-label">Adres E-mail</label>
-                            <input type="email" class="form-control" id="email" name="email" ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ required>
+                            <input type="email" class="form-control" id="email" name="email" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" required>
                             <div class="invalid-feedback">
                                 Wpisz prawidłowy adres e-mail
                             </div>
                         </div>
                         <div class="col-md-3">
                             <label for="tel" class="form-label">Numer telefonu</label>
-                            <input type="phone" class="form-control" id="tel" name="tel" pattern="[0-9]{9}" maxlength="9">
+                            <input type="tel" class="form-control" id="tel" name="tel" pattern="[0-9]{9}" maxlength="9">
                             <div class="invalid-feedback">
                                 Wprowadź numer telefonu w prawidłowym formacie (XXXXXXXXX)
                             </div>
@@ -138,8 +176,21 @@ if(isset($_POST['login'])){
                             </div>
                         </div>
                         <div class="col-md-2">
-                            <label for="hname" class="form-label">Numer domu</label>
-                            <input type="text" class="form-control" id="hname" name="hname" required>
+                            <label for="zip" class="form-label">Kod pocztowy</label>
+                            <input type="text" class="form-control" id="zip" name="zip" pattern="[0-9]{2}-[0-9]{3}" maxlength="6" required>
+                            <div class="invalid-feedback">
+                                Wprowadź prawidłowy kod pocztowy
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                        </div>
+                        <div class="col-md-5">
+                            <label for="street" class="form-label">Ulica</label>
+                            <input type="text" class="form-control" id="street" name="street" >
+                        </div>
+                        <div class="col-md-2">
+                            <label for="hnum" class="form-label">Numer domu</label>
+                            <input type="text" class="form-control" id="hnum" name="hnum" required>
                             <div class="invalid-feedback">
                                 Wpisz numer domu
                             </div>
@@ -147,13 +198,6 @@ if(isset($_POST['login'])){
                         <div class="col-md-2">
                             <label for="anum" class="form-label">Numer mieszkania</label>
                             <input type="text" class="form-control" id="anum" name="anum">
-                        </div>
-                        <div class="col-md-2">
-                            <label for="zip" class="form-label">Kod pocztowy</label>
-                            <input type="text" class="form-control" id="zip" name="zip" pattern="[0-9]{2}-[0-9]{3}" maxlength="6" required>
-                            <div class="invalid-feedback">
-                                Wprowadź prawidłowy kod pocztowy
-                            </div>
                         </div>
                         
                         <div class="col-12">
@@ -169,29 +213,7 @@ if(isset($_POST['login'])){
     </main>
     <!-- FOOTER -->
     <?php require_once("partials/footer.php")?>
-    <script src="scripts/scripts.js"></script>
+    <script src="scripts/formValidator.js"></script>
     <!-- Bootstrap 5.3 JavaScript Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-    'use strict'
-
-    // Pobierz wszystkie formularze, do których chcemy zastosować niestandardowe style walidacji Bootstrap
-    const forms = document.querySelectorAll('.needs-validation')
-
-    // Przejdź przez nie i zapobiegaj wysyłaniu, jeśli są błędy
-    Array.from(forms).forEach(form => {
-        form.addEventListener('submit', event => {
-            if (!form.checkValidity()) {
-                event.preventDefault()
-                event.stopPropagation()
-            }
-
-            // Dodanie klasy 'was-validated' uruchamia wizualne style Bootstrapa (na czerwono/zielono)
-            form.classList.add('was-validated')
-        }, false)
-    })
-})
-    </script>
 </body>
 </html>
