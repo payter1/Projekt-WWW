@@ -142,4 +142,27 @@ function plCharset($string) {
     
     return $string;
     }
+
+function GetAge($bday){
+$dob = new DateTime($bday);
+$now = new DateTime();
+$difference = $now->diff($dob);
+$age = $difference->y;
+
+return $age;
+}
+function GetBdayRange($age) {
+    $now = new DateTime();
+    
+    $maxBday = clone $now;
+    $maxBday->modify("-$age years");
+    
+    $minBday = clone $now;
+    $minBday->modify("-" . ($age + 1) . " years +1 day");
+    
+    return [
+        'min' => $minBday->format('Y-m-d'),
+        'max' => $maxBday->format('Y-m-d')
+    ];
+}
 ?>
