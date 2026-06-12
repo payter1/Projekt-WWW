@@ -54,7 +54,16 @@ require_once 'functions.php';
             </aside>
             <section class="col-lg-9">
                 <div class="mb-4 bg-primary-subtle border p-3 rounded-3 shadow-sm text-center fw-bold">
-                    <h2>Stajnia</h2>
+                    <div class="row justify-content-end">
+                        <div class="col-1"></div>
+                        <div class="col"><h2>Stajnia</h2></div>
+                        <?php if(isset($_SESSION['userLVL']) && $_SESSION['userLVL'] != 0){ ?>
+                        <div class="col-2"><a href="addDonk.php" class="btn btn-success btn-sm">Dodaj Osła</a></div>
+                        <?php } ?>
+                    </div>
+                    
+                    
+                    
                     <hr>
                     <form action="index.php" method="GET" class="row g-3">
                     <div class="col-auto">
@@ -133,7 +142,7 @@ require_once 'functions.php';
                                 ?>
                             </div>
                             <footer class="mt-auto pt-2 position-relative" style="z-index: 2;">
-                                <div class="btn btn-info">Zobacz profil</div>
+                                <a href="donkProfile.php?id=<?=$f['id']?>" class="btn btn-info">Zobacz profil</a>
                             </footer>
                         </div>
                     </article>

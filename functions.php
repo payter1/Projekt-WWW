@@ -1,6 +1,6 @@
 <?php
 
-function saveFile ($fileInputName, $allowedExtentions, $maxFileSizeMb, $saveFolder){
+function saveFile($fileInputName, $allowedExtentions, $maxFileSizeMb, $saveFolder) {
     // fileInputName - name pola <input type="file"> przesyłającego pliki
     // allowedExtentions - Dozwolone rozszerzenia plików wypisane po przecinku np.: 'png, jpg, gif'
     // maxFileSizeMb - maksymalny rozmiar pliku w Mb
@@ -10,54 +10,73 @@ function saveFile ($fileInputName, $allowedExtentions, $maxFileSizeMb, $saveFold
     //              [1,"ścieżki do pliku oddzielone ';'", ilość dodanych plików] - w przypadku dodania pliku
     //              [0,"błędy"] - w przypadku wystąpienia błędów
 
+    if (!isset($_FILES[$fileInputName])) {
+        return array(0, array("Nie przesłano żadnego pliku."));
+    }
+
     $counter = 0;
-    $sciezka = '';
+    $errors = array();
+    $sciezkaArray = array(); 
 
-    $exExt = explode(',',$allowedExtentions);
-    $extArray = array();
-    foreach($exExt as $ext){
-       $extArray[] = "$ext";
-    }
-    $errors= array();
-    if(is_uploaded_file($_FILES['$fileInputName']['tmp_name'])){
-        $errors[]="Nie przesłano żadnego pliku";
-    }
-    $file_name = $_FILES[$fileInputName]['name'];
-    $file_size =$_FILES[$fileInputName]['size'];
-    $file_tmp =$_FILES[$fileInputName]['tmp_name']; 
-    $file_type=$_FILES[$fileInputName]['type'];
-    $extensions= $extArray; 
-    foreach($file_name as $key => $value){ 
-     $tmp = explode('.',$_FILES[$fileInputName]['name'][$key]);
-     $file_ext = strtolower(end($tmp));
-     if(in_array($file_ext,$extensions)=== false){
-         $errors[]="Rozszerzenie niedozwolone.";
-     } 
-     $maxFileSize2B = $maxFileSizeMb * 1000000; //przeliczanie mb na bajty
-     if($file_size[$key] > $maxFileSize2B){
-         $errors[]="Plik nie może być większy niż $maxFileSizeMb MB.";
-     } 
-    }  
-    if(empty($errors)==true){        
-     foreach($file_name as $key => $value){
-       $data = date('Y-m-d H:i:s');
-       $saveFolder=trim($saveFolder,'/');
-       if(!file_exists($saveFolder)){
-          mkdir($saveFolder, 0777);
-       }
-        $saveFolder = $saveFolder.'/';
-        $sciezka .= $saveFolder.$file_name[$key].';';
-        $sciezka2 = substr($sciezka, 0, -1);
-        move_uploaded_file($file_tmp[$key],$sciezka2);
-        $counter++;
-     } 
-     $sciezka = substr($sciezka, 0, -1);
-     return array(1, $sciezka, $counter);
-    }else{
-    return array(0, $errors);
-    }
- }
+    $names = (array)$_FILES[$fileInputName]['name'];
+    $sizes = (array)$_FILES[$fileInputName]['size'];
+    $tmps  = (array)$_FILES[$fileInputName]['tmp_name'];
+    $errs  = (array)$_FILES[$fileInputName]['error'];
 
+    $exExt = explode(',', $allowedExtentions);
+    $extensions = array_map('trim', $exExt); 
+    
+    $maxBytes = $maxFileSizeMb * 1024 * 1024; 
+
+    $saveFolder = rtrim($saveFolder, '/');
+    if (!file_exists($saveFolder)) {
+        mkdir($saveFolder, 0777, true);
+    }
+
+    $filesToMove = array();
+
+    foreach ($names as $key => $name) {
+        if (empty($name) || $errs[$key] === UPLOAD_ERR_NO_FILE) {
+            continue;
+        }
+
+        $file_ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+        if (!in_array($file_ext, $extensions)) {
+            $errors[] = "Rozszerzenie pliku '$name' jest niedozwolone.";
+        }
+
+        if ($sizes[$key] > $maxBytes) {
+            $errors[] = "Plik '$name' przekracza dozwolony rozmiar $maxFileSizeMb MB.";
+        }
+
+        $uniqueName = uniqid('img_') . '.' . $file_ext;
+        $filesToMove[] = array(
+            'tmp_name' => $tmps[$key],
+            'target_path' => $saveFolder . '/' . $uniqueName
+        );
+    }
+
+    if (empty($filesToMove) && empty($errors)) {
+        return array(0, array("Nie wybrano żadnego pliku do wgrania."));
+    }
+
+    if (empty($errors)) {
+        foreach ($filesToMove as $file) {
+            if (move_uploaded_file($file['tmp_name'], $file['target_path'])) {
+                $sciezkaArray[] = $file['target_path'];
+                $counter++;
+            } else {
+                return array(0, array("Błąd podczas zapisu pliku na serwerze."));
+            }
+        }
+        
+        $sciezki_string = implode(';', $sciezkaArray);
+        return array(1, $sciezki_string, $counter);
+        
+    } else {
+        return array(0, $errors);
+    }
+}
 
 //OBSŁUGA WYSYŁKI PLIKÓW
     function file_check_err($inputName)
@@ -164,5 +183,23 @@ function GetBdayRange($age) {
         'min' => $minBday->format('Y-m-d'),
         'max' => $maxBday->format('Y-m-d')
     ];
+}
+
+function FirstFreeID($dbName, $tableName){
+    $sql = "SELECT `AUTO_INCREMENT` 
+            FROM INFORMATION_SCHEMA.TABLES 
+            WHERE TABLE_SCHEMA = '$dbName' 
+            AND TABLE_NAME = '$tableName'";
+
+    $result = mysqli_query($conn, $sql);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $firstFree = (int)$row['AUTO_INCREMENT'];
+    } else {
+        // Jeśli tabela nie istnieje lub jest błąd, domyślnie 1
+        $firstFree = 1; 
+        return $firstFree;
+}
 }
 ?>

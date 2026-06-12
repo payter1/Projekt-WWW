@@ -54,7 +54,7 @@ if(isset($_POST['login'])){
                     <article class="card h-100 shadow-sm border-0 position-relative">
 
                         <!-- alerty -->
-                        <?php if(isset($_GET['result'])){?>
+                        <?php if(isset($_GET['result']) && $_GET['result'] != 1){?>
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
                             <strong>Błąd: </strong> <?=$_GET['result']?>
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
