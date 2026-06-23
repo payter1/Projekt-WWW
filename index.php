@@ -5,7 +5,7 @@ require_once 'functions.php';
 <!DOCTYPE html>
 <html lang="pl" data-bs-theme="auto">
 <?php require_once("partials/html-head.php")?>
-<body class="d-flex flex-column min-vh-100 bg-body-tertiary" style="background-image: url('img/bg.png');">
+<body class="d-flex flex-column min-vh-100 bg-body-tertiary" style="background-image: url('img/bg.png'); background-attachment: fixed; background-size: cover; background-position: center;">
     <!-- NAV -->
     <?php require_once("partials/nav.php")?>
     <!-- Główna przestrzeń -->
@@ -115,7 +115,7 @@ require_once 'functions.php';
                     <article class="card h-100 shadow-sm border-0 position-relative">
                         <!-- Górna belka / zdjęcie osła -->
                         <div class="ratio ratio-4x3 bg-secondary-subtle">
-                            <img src="<?=$f['src']?>" alt="Zdjęcie Profilowe - <?=$f['name']?>">
+                            <img class="w-100 h-100 object-fit-cover" style="" src="<?=$f['src']?>" alt="Zdjęcie Profilowe - <?=$f['name']?>">
                         </div>
                         <div class="card-body d-flex flex-column p-3">
                             <header class="mb-2">

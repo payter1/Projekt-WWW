@@ -8,7 +8,7 @@ if($_SESSION['userLVL'] != 2){
 <html lang="pl" data-bs-theme="auto">
 <!-- <head>  -->
 <?php require_once("partials/html-head.php")?>
-<body class="d-flex flex-column min-vh-100 bg-body-tertiary" style="background-image: url('img/bg.png');">
+<body class="d-flex flex-column min-vh-100 bg-body-tertiary" style="background-image: url('img/bg.png'); background-attachment: fixed; background-size: cover; background-position: center;">
     <!-- Panel nawigacyjny -->
     <?php require_once("partials/nav.php")?>
     <!-- Główna przestrzeń -->
@@ -17,7 +17,7 @@ if($_SESSION['userLVL'] != 2){
             <section class="col-lg-12">
                 <!-- Pasek narzędziowy -->
                 <div class="d-flex justify-content-between align-items-center mb-4 bg-primary-subtle border p-3 rounded-3 shadow-sm">
-                    Dodaj użytkownika
+                    Zarządzanie użytkownikami
                 </div>
                 <div class="row">
                     <div class="col">

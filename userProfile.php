@@ -12,7 +12,7 @@ $f = mysqli_fetch_assoc($query);
 <html lang="pl" data-bs-theme="auto">
 <!-- <head>  -->
 <?php require_once("partials/html-head.php")?>
-<body class="d-flex flex-column min-vh-100 bg-body-tertiary" style="background-image: url('img/bg.png');">
+<body class="d-flex flex-column min-vh-100 bg-body-tertiary" style="background-image: url('img/bg.png'); background-attachment: fixed; background-size: cover; background-position: center;">
     <!-- Panel nawigacyjny -->
     <?php require_once("partials/nav.php")?>
     <!-- Główna przestrzeń -->
@@ -61,7 +61,7 @@ $f = mysqli_fetch_assoc($query);
                                         </dl>
                                     </div>
                                     <div class="col-1">
-                                        <a href="editProfile.php?<?=$_GET['id']?>" class="btn btn-primary">Edytuj</a>
+                                        <a href="editUser.php?id=<?=$_GET['id']?>" class="btn btn-primary">Edytuj</a>
                                     </div>
                                 </div>
                                 <div class="row">

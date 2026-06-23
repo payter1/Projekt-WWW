@@ -64,23 +64,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $imgToTask = '';
             
             // Zdjęcie profilowe
-            $profilePic = saveFile('profilePic', 'png, jpg, webp, gif', 10, "img/donkeys/$idDonk/prof");
+            $profilePic = saveFile('profilePic', 'png, jpg, jpeg, webp, gif', 10, "img/donkeys/$idDonk/prof");
             if ($profilePic[0] == 1) {
                 // profile = 1 dla zdjęcia profilowego
                 $imgToTask .= "('$profilePic[1]', $idDonk, 1),";
             } else {
-                throw new Exception("Nie udało się zapisać zdjęcia profilowego na serwerze.");
+                // throw new Exception("Nie udało się zapisać zdjęcia profilowego na serwerze.");
+                throw new Exception("Nie udało się zapisać zdjęcia profilowego na serwerze: " . $profilePic[1]);
             }
             
             // Zdjęcia dodatkowe
             if (isset($_FILES['extraPics']) && $_FILES['extraPics']['error'][0] === UPLOAD_ERR_OK) {
-                $extraPics = saveFile('extraPics', 'png, jpg, webp, gif', 10, "img/donkeys/$idDonk");
+                $extraPics = saveFile('extraPics', 'png, jpg, jpeg, webp, gif', 10, "img/donkeys/$idDonk");
                 if ($extraPics[0] == 1) {
                     $extraPicsHrefs = explode(';', $extraPics[1]);
                     foreach ($extraPicsHrefs as $picHref) {
                         if (!empty($picHref)) {
                             // profile = 0 dla zdjęć dodatkowych
-                            $imgToTask .= "('$picHref', $idDonk, 0),";
+                            $imgToTask .= "('$picHref', $idDonk, NULL),";
                         }
                     }
                 }
@@ -104,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $result = $e->getMessage();
         }
     }
-    header("Location: addDonk.php?result=" . urlencode($result)."&imgTask=$imgToTask");
+    header("Location: addDonk.php?result=" . urlencode($result));
     exit;
 } 
 ?>
@@ -112,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="pl" data-bs-theme="auto">
 <!-- <head>  -->
 <?php require_once("partials/html-head.php")?>
-<body class="d-flex flex-column min-vh-100 bg-body-tertiary" style="background-image: url('img/bg.png');">
+<body class="d-flex flex-column min-vh-100 bg-body-tertiary" style="background-image: url('img/bg.png'); background-attachment: fixed; background-size: cover; background-position: center;">
     <!-- Panel nawigacyjny -->
     <?php require_once("partials/nav.php")?>
     <!-- Główna przestrzeń -->
@@ -129,6 +130,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <?php if(isset($_GET['result']) && $_GET['result'] != 1){?>
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
                             <strong>Błąd: </strong> <?=$_GET['result']?>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        <?php }?>
+                        <?php if(isset($_GET['result']) && $_GET['result'] == 1){?>
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <strong>Dodano osiołka!</strong>
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                         <?php }?>

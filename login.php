@@ -21,6 +21,7 @@ if(isset($_POST['login'])){
             $user = $result -> fetch_assoc();
             if(password_verify($password, $user['password'])){
                 $_SESSION['logged'] = true;
+                $_SESSION['userID'] = $user['id'];
                 $_SESSION['userLogin'] = $user['login'];
                 $_SESSION['userFName'] = $user['fname'];
                 $_SESSION['userLName'] = $user['lname'];
@@ -41,7 +42,7 @@ if(isset($_POST['login'])){
 <html lang="pl" data-bs-theme="auto">
 <!-- <head>  -->
 <?php require_once("partials/html-head.php")?>
-<body class="d-flex flex-column min-vh-100 bg-body-tertiary" style="background-image: url('img/bg.png');">
+<body class="d-flex flex-column min-vh-100 bg-body-tertiary" style="background-image: url('img/bg.png'); background-attachment: fixed; background-size: cover; background-position: center;">
     <!-- Panel nawigacyjny -->
     <?php require_once("partials/nav.php")?>
     <!-- Główna przestrzeń -->
